@@ -1,25 +1,59 @@
-# TypePrint - Typing Effect with Colors and Sound 🎨🎵
+# typeprint.py
+import sys
+import time
+import builtins
+import random
+import os
+import threading
+import pygame
 
-**TypePrint** is a Python module that overrides the default `print()` function to display text with a realistic typing effect, random colors, and real keyboard typing sounds.
+# Initialize pygame mixer
+pygame.mixer.init()
 
-## Features
-- ✅ Realistic typing effect (character by character)
-- ✅ Random terminal text colors
-- ✅ Real keyboard typing sound (MP3 support)
-- ✅ Global `print()` override (no extra function calls)
-- ✅ Smooth and fast threading for sound playback
-- ✅ Works perfectly in Python terminal programs
+# Save the original print function
+original_print = builtins.print
 
-## Requirements
-- Python 3.x
-- Pygame (Install using `pip install pygame`)
+# Enable ANSI colors in Windows
+if os.name == 'nt':
+    os.system('')
 
-## Installation
-Just copy `typeprint.py` and your sound file to your project folder.
+# Color Codes
+colors = [
+    "\033[91m",  # Red
+    "\033[92m",  # Green
+    "\033[93m",  # Yellow
+    "\033[94m",  # Blue
+    "\033[95m",  # Magenta
+    "\033[96m",  # Cyan
+]
 
-## Usage
-```python
-import typeprint
+reset_color = "\033[0m"
 
-print("Hello world! This is a typing effect with sound and colors.")
-print("Each character is printed with a keyboard sound!")
+# Typing effect settings
+typing_speed = 0.03  # Typing delay between characters
+sound_file = "typing-18347.mp3"  # Your sound file
+
+def play_key_sound():
+    try:
+        sound = pygame.mixer.Sound(sound_file)
+        sound.play()
+    except Exception as e:
+        original_print(f"Sound error: {e}")
+
+def type_effect(text):
+    color = random.choice(colors)
+
+    for char in text:
+        sys.stdout.write(f"{color}{char}{reset_color}")
+        sys.stdout.flush()
+        threading.Thread(target=play_key_sound).start()
+        time.sleep(typing_speed)
+
+    original_print()  # New line
+
+def custom_print(*args, **kwargs):
+    text = " ".join(str(arg) for arg in args)
+    type_effect(text)
+
+# Override the default print
+builtins.print = custom_print
